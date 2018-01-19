@@ -96,7 +96,10 @@ class PurchaseOrder(models.Model):
                 order.is_shipped = True
 
     READONLY_STATES = {
-        'purchase': [('readonly', True)],
+        'to approve': [('readonly', True)],
+        'approved': [('readonly', True)],
+        'ordered': [('readonly', True)],
+        'received': [('readonly', True)],
         'done': [('readonly', True)],
         'cancel': [('readonly', True)],
     }
@@ -122,8 +125,10 @@ class PurchaseOrder(models.Model):
     state = fields.Selection([
         ('created', 'RFQ created'),
         ('processing', 'RFQ processing'),
-        ('to approve', 'To Approve'),
-        ('purchase', 'Purchase Order'),
+        ('to approve', 'To approve'),
+        ('approved', 'PO approved'),
+        ('ordered', 'PO ordered'),
+        ('received', 'PO received'),
         ('done', 'Locked'),
         ('cancel', 'Cancelled')
         ], string='Status', readonly=True, index=True, copy=False, default='created', track_visibility='onchange')
@@ -331,11 +336,17 @@ class PurchaseOrder(models.Model):
 
     @api.multi
     def button_approve(self, force=False):
-        self.write({'state': 'purchase'})
+        self.write({'state': 'approved'})
         self._create_picking()
-        if self.company_id.po_lock == 'lock':
-            self.write({'state': 'done'})
         return {}
+
+    @api.multi
+    def button_order(self):
+        self.write({'state': 'ordered'})
+
+    @api.multi
+    def button_receive(self):
+        self.write({'state': 'received'})
 
     @api.multi
     def button_draft(self):
@@ -348,14 +359,7 @@ class PurchaseOrder(models.Model):
             if order.state != 'processing':
                 continue
             order._add_supplier_to_product()
-            # Deal with double validation process
-            if order.company_id.po_double_validation == 'one_step'\
-                    or (order.company_id.po_double_validation == 'two_step'\
-                        and order.amount_total < self.env.user.company_id.currency_id.compute(order.company_id.po_double_validation_amount, order.currency_id))\
-                    or order.user_has_groups('purchase.group_purchase_manager'):
-                order.button_approve()
-            else:
-                order.write({'state': 'to approve'})
+            order.write({'state': 'to approve'})
         return True
 
     @api.multi
@@ -384,7 +388,7 @@ class PurchaseOrder(models.Model):
 
     @api.multi
     def button_unlock(self):
-        self.write({'state': 'purchase'})
+        self.write({'state': 'processing'})
 
     @api.multi
     def button_done(self):

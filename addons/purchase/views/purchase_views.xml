@@ -153,17 +153,20 @@
                 <form string="Purchase Order">
                 <header>
                     <button name="action_rfq_send" string="Send RFQ by Email" states="created,processing" context="{'send_rfq':True}" type="object"/>
-                    <button name="print_quotation" string="Print RFQ" states="created" groups="base.group_user" type="object"/>
+                    <button name="action_rfq_send" string="Send PO by Email" states="approved,ordered,received" context="{'send_rfq':False}" type="object"/>
+                    <button name="print_quotation" string="Print RFQ" states="created,processing" groups="base.group_user" type="object"/>
                     <button name="button_process" string="Start processing" states="created" class="oe_highlight" type="object"/>
+                    <button name="button_process" string="Back to processing" states="to approve" class="oe_highlight" type="object"/>
                     <button name="button_confirm" string="Confirm" states="processing" class="oe_highlight" type="object" id="bid_confirm"/>
-                    <button name="button_approve" type="object" states='to approve' string="Approve Order" class="oe_highlight" groups="purchase.group_purchase_manager"/>
-                    <button name="action_rfq_send" states="purchase" string="Send PO by Email" type="object" context="{'send_rfq':False}"/>
-                    <button name="action_view_picking" string="Receive Products" class="oe_highlight" type="object" attrs="{'invisible': ['|', '|' , ('is_shipped', '=', True), ('state','not in', ('purchase','done')), ('picking_count', '=', 0)]}"/>
+                    <button name="button_approve" string="Approve" states="to approve" groups="purchase.group_purchase_manager" class="oe_highlight" type="object"/>
+                    <button name="button_order" string="Ordered" states="approved" class="oe_highlight" type="object"/>
+                    <button name="button_receive" string="Received" class="oe_highlight" attrs="{'invisible': ['|', '|', ('is_shipped', '=', False), ('state','not in', ('ordered','done')), ('picking_count', '=', 0)]}" type="object"/>
+                    <button name="action_view_picking" string="Receive Products" class="oe_highlight" type="object" attrs="{'invisible': ['|', '|' , ('is_shipped', '=', True), ('state','not in', ('ordered','done')), ('picking_count', '=', 0)]}"/>
                     <button name="button_draft" string="Set to Processing" states="cancel" type="object"/>
-                    <button name="button_cancel" string="Cancel" states="created,processing,to approve,purchase" type="object"/>
-                    <button name="button_done" type="object" string="Lock" states="purchase"/>
-                    <button name="button_unlock" type="object" string="Unlock" states="done" groups="purchase.group_purchase_manager"/>
-                    <field name="state" widget="statusbar" statusbar_visible="created,processing,purchase" readonly="1"/>
+                    <button name="button_cancel" string="Cancel" states="created,processing,to approve,approved,ordered,received" type="object"/>
+                    <button name="button_done" string="Lock" states="approved,ordered,received" type="object"/>
+                    <button name="button_unlock" string="Unlock" states="done" groups="purchase.group_purchase_manager" type="object"/>
+                    <field name="state" widget="statusbar" statusbar_visible="created,processing,to approve,approved,ordered,received" readonly="1"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
