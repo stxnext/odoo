@@ -152,40 +152,38 @@
             <field name="arch" type="xml">
                 <form string="Purchase Order">
                 <header>
-                    <button name="action_rfq_send" states="draft" string="Send RFQ by Email" type="object" context="{'send_rfq':True}" class="oe_highlight"/>
-                    <button name="action_rfq_send" states="sent" string="Re-Send RFQ by Email" type="object" context="{'send_rfq':True}"/>
-                    <button name="print_quotation" string="Print RFQ" type="object" states="draft" class="oe_highlight" groups="base.group_user"/>
-                    <button name="print_quotation" string="Print RFQ" type="object" states="sent" groups="base.group_user"/>
-                    <button name="button_confirm" type="object" states="draft" string="Confirm Order" id="draft_confirm"/>
-                    <button name="button_confirm" type="object" states="sent" string="Confirm Order" class="oe_highlight" id="bid_confirm"/>
+                    <button name="action_rfq_send" string="Send RFQ by Email" states="created,processing" context="{'send_rfq':True}" type="object"/>
+                    <button name="print_quotation" string="Print RFQ" states="created" groups="base.group_user" type="object"/>
+                    <button name="button_process" string="Start processing" states="created" class="oe_highlight" type="object"/>
+                    <button name="button_confirm" string="Confirm" states="processing" class="oe_highlight" type="object" id="bid_confirm"/>
                     <button name="button_approve" type="object" states='to approve' string="Approve Order" class="oe_highlight" groups="purchase.group_purchase_manager"/>
                     <button name="action_rfq_send" states="purchase" string="Send PO by Email" type="object" context="{'send_rfq':False}"/>
                     <button name="action_view_picking" string="Receive Products" class="oe_highlight" type="object" attrs="{'invisible': ['|', '|' , ('is_shipped', '=', True), ('state','not in', ('purchase','done')), ('picking_count', '=', 0)]}"/>
-                    <button name="button_draft" states="cancel" string="Set to Draft" type="object" />
-                    <button name="button_cancel" states="draft,to approve,sent,purchase" string="Cancel" type="object" />
+                    <button name="button_draft" string="Set to Processing" states="cancel" type="object"/>
+                    <button name="button_cancel" string="Cancel" states="created,processing,to approve,purchase" type="object"/>
                     <button name="button_done" type="object" string="Lock" states="purchase"/>
                     <button name="button_unlock" type="object" string="Unlock" states="done" groups="purchase.group_purchase_manager"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,sent,purchase" readonly="1"/>
+                    <field name="state" widget="statusbar" statusbar_visible="created,processing,purchase" readonly="1"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button type="object"
                             name="action_view_picking"
                             class="oe_stat_button"
-                            icon="fa-truck" attrs="{'invisible':[('state', 'in', ('draft','sent','to approve')),('picking_ids','=',[])]}">
+                            icon="fa-truck" attrs="{'invisible':[('state', 'in', ('created','processing','to approve')),('picking_ids','=',[])]}">
                             <field name="picking_count" widget="statinfo" string="Shipment" help="Incoming Shipments"/>
                             <field name="picking_ids" invisible="1"/>
                         </button>
                         <button type="object"  name="action_view_invoice"
                             class="oe_stat_button"
-                            icon="fa-pencil-square-o" attrs="{'invisible':[('state', 'in', ('draft','sent','to approve')),('invoice_ids','=',[])]}">
+                            icon="fa-pencil-square-o" attrs="{'invisible':[('state', 'in', ('created','processing','to approve')),('invoice_ids','=',[])]}">
                             <field name="invoice_count" widget="statinfo" string="Vendor Bills"/>
                             <field name='invoice_ids' invisible="1"/>
-                        </button> 
+                        </button>
                     </div>
                     <div class="oe_title">
-                        <label string="Request for Quotation " attrs="{'invisible': [('state','not in',('draft','sent','bid'))]}"/>
-                        <label string="Purchase Order " attrs="{'invisible': [('state','in',('draft','sent','bid'))]}"/>
+                        <label string="Request for Quotation " attrs="{'invisible': [('state','not in',('created','processing','bid'))]}"/>
+                        <label string="Purchase Order " attrs="{'invisible': [('state','in',('created','processing','bid'))]}"/>
                         <h1>
                             <field name="name" readonly="1"/>
                         </h1>
@@ -273,9 +271,9 @@
                                 <group>
                                     <label for="date_planned"/>
                                     <div>
-                                        <field name="date_planned" required="1" attrs="{'readonly': [('state', 'not in', ('draft', 'sent'))]}"/>
+                                        <field name="date_planned" required="1" attrs="{'readonly': [('state', 'not in', ('created', 'processing'))]}"/>
                                         <button name="action_set_date_planned" type="object"
-                                            states="draft,sent"
+                                            states="created,processing"
                                             string="Set date to all order lines"
                                             help="This changes the scheduled date of all order lines to the given date"
                                             class="fa fa-calendar o_icon_button oe_edit_only"/>
@@ -313,7 +311,7 @@
                     <field name="partner_id" operator="child_of"/>
                     <field name="product_id"/>
                     <field name="create_uid"/>
-                    <filter name="draft" string="Quotations" domain="[('state','in',('draft','sent','to approve'))]"/>
+                    <filter name="draft" string="Quotations" domain="[('state','in',('created','processing','to approve'))]"/>
                     <filter name="approved" string="Purchase Orders" domain="[('state','in',('purchase','done'))]"/>
                     <filter name="to_approve" string="To Approve" domain="[('state', '=', 'to approve')]"/>
                     <separator/>
@@ -368,7 +366,7 @@
                                         <span><t t-esc="record.name.value"/> <t t-esc="record.date_order.value and record.date_order.value.split(' ')[0] or False"/></span>
                                     </div>
                                     <div class="oe_kanban_bottom_right">
-                                        <field name="state" widget="label_selection" options="{'classes': {'draft': 'default', 'cancel': 'default', 'done': 'success', 'approved': 'warning'}}"/>
+                                        <field name="state" widget="label_selection" options="{'classes': {'created': 'default', 'cancel': 'default', 'done': 'success', 'approved': 'warning'}}"/>
                                     </div>
                                 </div>
                             </div>
@@ -412,7 +410,7 @@
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">purchase.order</field>
             <field name="context">{'search_default_todo':1, 'show_purchase': False}</field>
-            <field name="domain">[('state','in',('draft','sent','bid','cancel', 'confirmed'))]</field>
+            <field name="domain">[('state','in',('created','processing','bid','cancel', 'confirmed'))]</field>
             <field name="view_mode">tree,kanban,form,pivot,graph,calendar</field>
             <field name="search_view_id" ref="view_purchase_order_filter"/>
             <field name="help" type="html">
@@ -438,11 +436,11 @@
             <field name="res_model">purchase.order</field>
             <field name="view_mode">tree,kanban,form,pivot,graph,calendar</field>
             <field name="context">{'search_default_todo':1, 'show_purchase': True}</field>
-            <field name="domain">[('state','not in',('draft','sent','bid', 'confirmed'))]</field>
+            <field name="domain">[('state','not in',('created','processing','bid', 'confirmed'))]</field>
             <field name="search_view_id" ref="view_purchase_order_filter"/>
             <field name="help" type="html">
               <p class="oe_view_nocontent_create">
-                Click to create a quotation that will be converted into a purchase order. 
+                Click to create a quotation that will be converted into a purchase order.
               </p><p>
                 Use this menu to search within your purchase orders by
                 references, vendor, products, etc. For each purchase order,
@@ -533,7 +531,7 @@
         </record>
 
         <!-- Product Suppliers-->
-        
+
         <record id="view_product_supplier_inherit" model="ir.ui.view">
             <field name="name">product.template.supplier.form.inherit</field>
             <field name="model">product.template</field>
@@ -603,7 +601,7 @@
                 </field>
             </field>
         </record>
-        
+
         <record id="view_product_template_purchase_buttons_from" model="ir.ui.view">
             <field name="name">product.template.purchase.button.inherit</field>
             <field name="model">product.template</field>

@@ -120,13 +120,13 @@ class PurchaseOrder(models.Model):
     currency_id = fields.Many2one('res.currency', 'Currency', required=True, states=READONLY_STATES,\
         default=lambda self: self.env.user.company_id.currency_id.id)
     state = fields.Selection([
-        ('draft', 'RFQ'),
-        ('sent', 'RFQ Sent'),
+        ('created', 'RFQ created'),
+        ('processing', 'RFQ processing'),
         ('to approve', 'To Approve'),
         ('purchase', 'Purchase Order'),
         ('done', 'Locked'),
         ('cancel', 'Cancelled')
-        ], string='Status', readonly=True, index=True, copy=False, default='draft', track_visibility='onchange')
+        ], string='Status', readonly=True, index=True, copy=False, default='created', track_visibility='onchange')
     order_line = fields.One2many('purchase.order.line', 'order_id', string='Order Lines', states={'cancel': [('readonly', True)], 'done': [('readonly', True)]}, copy=True)
     notes = fields.Text('Terms and Conditions')
 
@@ -326,6 +326,10 @@ class PurchaseOrder(models.Model):
         return self.env.ref('purchase.report_purchase_quotation').report_action(self)
 
     @api.multi
+    def button_process(self):
+        self.write({'state': 'processing'})
+
+    @api.multi
     def button_approve(self, force=False):
         self.write({'state': 'purchase'})
         self._create_picking()
@@ -335,13 +339,13 @@ class PurchaseOrder(models.Model):
 
     @api.multi
     def button_draft(self):
-        self.write({'state': 'draft'})
+        self.write({'state': 'processing'})
         return {}
 
     @api.multi
     def button_confirm(self):
         for order in self:
-            if order.state not in ['draft', 'sent']:
+            if order.state != 'processing':
                 continue
             order._add_supplier_to_product()
             # Deal with double validation process
@@ -366,7 +370,7 @@ class PurchaseOrder(models.Model):
 
             # If the product is MTO, change the procure_method of the the closest move to purchase to MTS.
             # The purpose is to link the po that the user will manually generate to the existing moves's chain.
-            if order.state in ('draft', 'sent', 'to approve'):
+            if order.state in ('created', 'processing', 'to approve'):
                 for order_line in order.order_line:
                     if order_line.move_dest_ids:
                         siblings_states = (order_line.move_dest_ids.mapped('move_orig_ids')).mapped('state')
@@ -1105,10 +1109,7 @@ class MailComposeMessage(models.TransientModel):
 
     @api.multi
     def mail_purchase_order_on_send(self):
-        if not self.filtered('subtype_id.internal'):
-            order = self.env['purchase.order'].browse(self._context['default_res_id'])
-            if order.state == 'draft':
-                order.state = 'sent'
+        pass
 
     @api.multi
     def send_mail(self, auto_commit=False):
