@@ -4,7 +4,7 @@
         <!-- Top menu item -->
         <menuitem name="Purchases"
             id="menu_purchase_root"
-            groups="group_purchase_manager,group_purchase_user"
+            groups="group_purchase_approver,group_purchase_manager,group_purchase_user"
             web_icon="purchase,static/description/icon.png"
             sequence="25"/>
 
@@ -16,7 +16,7 @@
             parent="menu_procurement_management"
             action="base.action_partner_supplier_form" sequence="15"/>
 
-        <menuitem id="menu_purchase_config" name="Configuration" parent="menu_purchase_root" sequence="100" groups="group_purchase_manager"/>
+        <menuitem id="menu_purchase_config" name="Configuration" parent="menu_purchase_root" sequence="100" groups="group_purchase_approver"/>
 
         <menuitem
            action="product.product_supplierinfo_type_action" id="menu_product_pricelist_action2_purchase"
@@ -155,17 +155,17 @@
                     <button name="action_rfq_send" string="Send RFQ by Email" states="created,processing" context="{'send_rfq':True}" type="object"/>
                     <button name="action_rfq_send" string="Send PO by Email" states="approved,ordered,received" context="{'send_rfq':False}" type="object"/>
                     <button name="print_quotation" string="Print RFQ" states="created,processing" groups="base.group_user" type="object"/>
-                    <button name="button_process" string="Start processing" states="created" class="oe_highlight" type="object"/>
-                    <button name="button_process" string="Back to processing" states="to approve" class="oe_highlight" type="object"/>
-                    <button name="button_confirm" string="Confirm" states="processing" class="oe_highlight" type="object" id="bid_confirm"/>
-                    <button name="button_approve" string="Approve" states="to approve" groups="purchase.group_purchase_manager" class="oe_highlight" type="object"/>
-                    <button name="button_order" string="Ordered" states="approved" class="oe_highlight" type="object"/>
-                    <button name="button_receive" string="Received" class="oe_highlight" attrs="{'invisible': ['|', '|', ('is_shipped', '=', False), ('state','not in', ('ordered','done')), ('picking_count', '=', 0)]}" type="object"/>
-                    <button name="action_view_picking" string="Receive Products" class="oe_highlight" type="object" attrs="{'invisible': ['|', '|' , ('is_shipped', '=', True), ('state','not in', ('ordered','done')), ('picking_count', '=', 0)]}"/>
+                    <button name="button_process" string="Start processing" states="created" groups="purchase.group_purchase_manager,purchase.group_purchase_approver" class="oe_highlight" type="object"/>
+                    <button name="button_process" string="Back to processing" states="to approve" groups="purchase.group_purchase_manager,purchase.group_purchase_approver" class="oe_highlight" type="object"/>
+                    <button name="button_confirm" string="Confirm" states="processing" groups="purchase.group_purchase_manager,purchase.group_purchase_approver" class="oe_highlight" type="object" id="bid_confirm"/>
+                    <button name="button_approve" string="Approve" states="to approve" groups="purchase.group_purchase_approver" class="oe_highlight" type="object"/>
+                    <button name="button_order" string="Ordered" states="approved" groups="purchase.group_purchase_manager" class="oe_highlight" type="object"/>
+                    <button name="button_receive" string="Received" groups="purchase.group_purchase_user,purchase.group_purchase_manager" class="oe_highlight" attrs="{'invisible': ['|', '|', ('is_shipped', '=', False), ('state','not in', ('ordered','done')), ('picking_count', '=', 0)]}" type="object"/>
+                    <button name="action_view_picking" string="Receive Products" groups="purchase.group_purchase_user,purchase.group_purchase_manager" class="oe_highlight" type="object" attrs="{'invisible': ['|', '|' , ('is_shipped', '=', True), ('state','not in', ('ordered','done')), ('picking_count', '=', 0)]}"/>
                     <button name="button_draft" string="Set to Processing" states="cancel" type="object"/>
                     <button name="button_cancel" string="Cancel" states="created,processing,to approve,approved,ordered,received" type="object"/>
                     <button name="button_done" string="Lock" states="approved,ordered,received" type="object"/>
-                    <button name="button_unlock" string="Unlock" states="done" groups="purchase.group_purchase_manager" type="object"/>
+                    <button name="button_unlock" string="Unlock" states="done"  groups="purchase.group_purchase_manager,purchase.group_purchase_approver" type="object"/>
                     <field name="state" widget="statusbar" statusbar_visible="created,processing,to approve,approved,ordered,received" readonly="1"/>
                 </header>
                 <sheet>
@@ -609,7 +609,6 @@
             <field name="name">product.template.purchase.button.inherit</field>
             <field name="model">product.template</field>
             <field name="inherit_id" ref="product.product_template_only_form_view"/>
-            <field name="groups_id" eval="[(4, ref('purchase.group_purchase_user'))]"/>
             <field name="arch" type="xml">
                 <button name="toggle_active" position="before">
                    <button class="oe_stat_button" name="%(purchase.action_purchase_line_product_tree)d"

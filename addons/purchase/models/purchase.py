@@ -96,7 +96,6 @@ class PurchaseOrder(models.Model):
                 order.is_shipped = True
 
     READONLY_STATES = {
-        'to approve': [('readonly', True)],
         'approved': [('readonly', True)],
         'ordered': [('readonly', True)],
         'received': [('readonly', True)],
