@@ -95,6 +95,12 @@ class PurchaseOrder(models.Model):
             if order.picking_ids and all([x.state == 'done' for x in order.picking_ids]):
                 order.is_shipped = True
 
+    @api.depends('picking_ids', 'picking_ids.state')
+    def _compute_is_receivable(self):
+        for order in self:
+            if not order.picking_ids or all([x.state == 'done' for x in order.picking_ids]):
+                order.is_receivable = True
+
     READONLY_STATES = {
         'to approve': [('readonly', True)],
         'approved': [('readonly', True)],
@@ -167,6 +173,7 @@ class PurchaseOrder(models.Model):
         help="Technical field used to display the Drop Ship Address", readonly=True)
     group_id = fields.Many2one('procurement.group', string="Procurement Group", copy=False)
     is_shipped = fields.Boolean(compute="_compute_is_shipped")
+    is_receivable = fields.Boolean(compute="_compute_is_receivable")
 
     website_url = fields.Char(
         'Website URL', compute='_website_url',
