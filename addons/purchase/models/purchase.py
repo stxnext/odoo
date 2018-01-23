@@ -96,6 +96,7 @@ class PurchaseOrder(models.Model):
                 order.is_shipped = True
 
     READONLY_STATES = {
+        'to approve': [('readonly', True)],
         'approved': [('readonly', True)],
         'ordered': [('readonly', True)],
         'received': [('readonly', True)],
@@ -131,7 +132,7 @@ class PurchaseOrder(models.Model):
         ('done', 'Locked'),
         ('cancel', 'Cancelled')
         ], string='Status', readonly=True, index=True, copy=False, default='created', track_visibility='onchange')
-    order_line = fields.One2many('purchase.order.line', 'order_id', string='Order Lines', states={'cancel': [('readonly', True)], 'done': [('readonly', True)]}, copy=True)
+    order_line = fields.One2many('purchase.order.line', 'order_id', string='Order Lines', states=READONLY_STATES, copy=True)
     notes = fields.Text('Terms and Conditions')
 
     invoice_count = fields.Integer(compute="_compute_invoice", string='# of Bills', copy=False, default=0, store=True)
