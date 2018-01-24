@@ -235,6 +235,14 @@ class PurchaseOrder(models.Model):
             return 'purchase.mt_rfq_created'
         elif 'state' in init_values and self.state == 'processing':
             return 'purchase.mt_rfq_processing'
+        elif 'state' in init_values and self.state == 'to approve':
+            return 'purchase.mt_po_to_approve'
+        elif 'state' in init_values and self.state == 'approved':
+            return 'purchase.mt_po_approved'
+        elif 'state' in init_values and self.state == 'ordered':
+            return 'purchase.mt_po_ordered'
+        elif 'state' in init_values and self.state == 'received':
+            return 'purchase.mt_po_received'
         return super(PurchaseOrder, self)._track_subtype(init_values)
 
     @api.onchange('partner_id', 'company_id')

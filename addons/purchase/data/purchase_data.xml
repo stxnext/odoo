@@ -33,6 +33,26 @@
             <field name="default" eval="True"/>
             <field name="res_model">purchase.order</field>
         </record>
+        <record id="mt_po_to_approve" model="mail.message.subtype">
+            <field name="name">PO To approve</field>
+            <field name="default" eval="True"/>
+            <field name="res_model">purchase.order</field>
+        </record>
+        <record id="mt_po_approved" model="mail.message.subtype">
+            <field name="name">PO Approved</field>
+            <field name="default" eval="True"/>
+            <field name="res_model">purchase.order</field>
+        </record>
+        <record id="mt_po_ordered" model="mail.message.subtype">
+            <field name="name">PO Ordered</field>
+            <field name="default" eval="True"/>
+            <field name="res_model">purchase.order</field>
+        </record>
+        <record id="mt_po_received" model="mail.message.subtype">
+            <field name="name">PO Received</field>
+            <field name="default" eval="True"/>
+            <field name="res_model">purchase.order</field>
+        </record>
 
         <!--
              Procurement rules and routes
