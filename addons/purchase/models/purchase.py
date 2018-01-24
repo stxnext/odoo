@@ -231,12 +231,10 @@ class PurchaseOrder(models.Model):
     @api.multi
     def _track_subtype(self, init_values):
         self.ensure_one()
-        if 'state' in init_values and self.state == 'purchase':
-            return 'purchase.mt_rfq_approved'
-        elif 'state' in init_values and self.state == 'to approve':
-            return 'purchase.mt_rfq_confirmed'
-        elif 'state' in init_values and self.state == 'done':
-            return 'purchase.mt_rfq_done'
+        if 'state' in init_values and self.state == 'created':
+            return 'purchase.mt_rfq_created'
+        elif 'state' in init_values and self.state == 'processing':
+            return 'purchase.mt_rfq_processing'
         return super(PurchaseOrder, self)._track_subtype(init_values)
 
     @api.onchange('partner_id', 'company_id')
