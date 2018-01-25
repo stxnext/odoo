@@ -211,6 +211,12 @@ class PurchaseOrder(models.Model):
             vals['name'] = self.env['ir.sequence'].next_by_code('purchase.order') or '/'
         return super(PurchaseOrder, self).create(vals)
 
+    @api.model
+    def write(self, vals):
+        if 'state' in vals and vals['state'] == 'approved':
+            self.date_approve = datetime.today()
+        super(PurchaseOrder, self).write(vals)
+
     @api.multi
     def unlink(self):
         for order in self:
