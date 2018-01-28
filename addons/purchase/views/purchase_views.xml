@@ -204,6 +204,13 @@
                             <field name="origin" attrs="{'invisible': [('origin','=',False)]}"/>
                             <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
                         </group>
+                        <group>
+                            <field name="project_related"/>
+                            <field name="project_name"/>
+                        </group>
+                        <group>
+                            <field name="branch_office"/>
+                        </group>
                     </group>
                     <notebook>
                         <page string="Products">
@@ -388,6 +395,9 @@
                     <field name="message_unread" invisible="1"/>
                     <field name="name" string="Reference"/>
                     <field name="date_order" />
+                    <field name="project_related"/>
+                    <field name="project_name"/>
+                    <field name="branch_office"/>
                     <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
                     <field name="amount_untaxed" sum="Total Untaxed amount" string="Untaxed" widget="monetary"/>
                     <field name="amount_total" sum="Total amount" widget="monetary"/>

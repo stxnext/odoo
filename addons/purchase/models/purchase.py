@@ -175,6 +175,16 @@ class PurchaseOrder(models.Model):
     is_shipped = fields.Boolean(compute="_compute_is_shipped")
     is_receivable = fields.Boolean(compute="_compute_is_receivable")
 
+    project_related = fields.Boolean('Project Related', default=False, states=READONLY_STATES)
+    project_name = fields.Char('Project Name', states=READONLY_STATES)
+    branch_office = fields.Selection((
+        ('poznan', 'Poznań'),
+        ('wroclaw', 'Wrocław'),
+        ('pila', 'Piła'),
+        ('lodz', 'Łódź'),
+        ('gdansk', 'Gdańsk')
+        ), 'Branch Office', states=READONLY_STATES)
+
     website_url = fields.Char(
         'Website URL', compute='_website_url',
         help='The full URL to access the document through the website.')
@@ -211,11 +221,12 @@ class PurchaseOrder(models.Model):
             vals['name'] = self.env['ir.sequence'].next_by_code('purchase.order') or '/'
         return super(PurchaseOrder, self).create(vals)
 
-    @api.model
+    @api.multi
     def write(self, vals):
+        ctx = dict(self._context or {})
         if 'state' in vals and vals['state'] == 'approved':
             self.date_approve = datetime.today()
-        super(PurchaseOrder, self).write(vals)
+        super(PurchaseOrder, self.with_context(ctx)).write(vals)
 
     @api.multi
     def unlink(self):
